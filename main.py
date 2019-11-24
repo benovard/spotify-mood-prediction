@@ -1,13 +1,15 @@
 from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
-import matplotlib as mpl
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import spotipy
-import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+
 
 # API id and secret
 clientId = "224f76769eaf40f8b2276cc315f4dad3"
@@ -61,13 +63,6 @@ for k in K:
     km = km.fit(song_features)
     SSE.append(km.inertia_)
 
-for k in range(2, 15):
-    clusterer = KMeans(n_clusters=k)
-    preds = clusterer.fit_predict(song_features)
-    centers = clusterer.cluster_centers_
-    #score = silhouette_score(song_features, preds, metric='euclidean')
-    #print('for ', k, ' clusters, silhouette score is ', score)
-
 # plot SSE vs K
 plt.plot(K, SSE, 'gx-')
 plt.xlabel('K')
@@ -75,7 +70,7 @@ plt.ylabel('SSE')
 plt.show()
 
 # cluster with kmeans
-k_means = KMeans(n_clusters=4)
+k_means = KMeans(n_clusters=5)
 k_means.fit(song_features)
 
 # dimension reduction with pca
@@ -95,3 +90,21 @@ plt.scatter(pc[pc.label == 3].x, pc[pc.label == 3].y)
 plt.scatter(pc[pc.label == 4].x, pc[pc.label == 4].y)
 plt.scatter(pc[pc.label == 5].x, pc[pc.label == 5].y)
 plt.show()
+
+# add cluster labels to songs
+df['cluster'] = y_kmeans
+
+# add labels to clusters
+labels = ["Angry", "Sad", "Vibin", "Dancey", "Chill"]
+
+# create train and test sets
+x = song_features
+y = y_kmeans
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33)
+
+# classify with knn
+knn = KNeighborsClassifier(n_neighbors = 3)
+knn.fit(x_train, y_train)
+knn_pred = knn.predict(x_test)
+
+print(classification_report(y_test, knn_pred, target_names=labels))

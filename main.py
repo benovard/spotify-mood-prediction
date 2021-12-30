@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+from api_key import ApiKey
 
 
 # API id and secret
-clientId = "224f76769eaf40f8b2276cc315f4dad3"
-secret = "15f09542e9de45dd881c71acb9eaf6f7"
+clientId = ApiKey.CLIENT_ID
+secret = ApiKey.SECRET
 
 # Set up spotify object
 client_credentials_manager = SpotifyClientCredentials(client_id=clientId, client_secret=secret)
